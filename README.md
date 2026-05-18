@@ -226,3 +226,7 @@ Evidence is encrypted before being written to IndexedDB. The PIN is never stored
 ## License
 
 MIT License. See `LICENSE.txt`.
+
+---
+
+Gemma is a trademark of Google LLC. This project is not affiliated with or endorsed by Google.

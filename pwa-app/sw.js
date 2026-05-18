@@ -9,10 +9,10 @@ const APP_SHELL = [
   './calculator.js',
   './vault.js',
   './inference_chat.js',
-  './audio.js',
+  './stt-client.js',
   './storage.js',
   './export.js',
-  './demo-data/seed.js',
+  './demo-data/sample_evidence_pacakge.zip',
   'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
 ];
 

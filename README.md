@@ -2,9 +2,7 @@
 
 **A calculator-disguised evidence vault for domestic violence survivors, powered by Gemma 4.**
 
-Live demo: [https://lbfn83.github.io/silent-witness-hackathon/](https://lbfn83.github.io/silent-witness-hackathon/)
-
-Submission: [Gemma 4 Good Hackathon](https://www.kaggle.com/competitions/gemma-4-good-hackathon) · Safety & Trust track · Ollama track
+Submission: [Gemma 4 Good Hackathon](https://www.kaggle.com/competitions/gemma-4-good-hackathon) 
 
 ---
 
@@ -212,12 +210,6 @@ Evidence is encrypted before being written to IndexedDB. The PIN is never stored
 | **Main Track** | Functional PWA with real Gemma 4 multimodal analysis, deployed live |
 
 ---
-
-## Submission Links
-
-- **Live demo:** https://lbfn83.github.io/silent-witness-hackathon/
-- **LLM server health:** `/health` on the deployed Modal URL
-- **Default demo PIN:** `1337 =` on the calculator screen
 
 ## Demo Notes
 

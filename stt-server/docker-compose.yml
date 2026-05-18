@@ -1,0 +1,37 @@
+services:
+
+  # ── GPU (배포용: Lambda / RunPod / AWS) ──────────────
+  stt-gpu:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - WHISPER_MODEL=large-v3-turbo
+      - DEVICE=cuda
+      - COMPUTE_TYPE=float16
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - model-cache:/root/.cache/huggingface
+    profiles: [gpu]
+
+  # ── CPU (로컬 개발/테스트용) ──────────────────────────
+  stt-cpu:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - WHISPER_MODEL=base        # base 정도면 로컬 테스트 충분
+      - DEVICE=cpu
+      - COMPUTE_TYPE=int8
+    volumes:
+      - model-cache:/root/.cache/huggingface
+    profiles: [cpu]
+
+volumes:
+  model-cache:

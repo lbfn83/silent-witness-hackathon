@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- viewport-fit=cover fills the entire screen including notch and home bar areas -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#1a1a2e" />
+  <title>Calculator</title>
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- iOS PWA standalone mode -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Calc" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%231a1a2e'/><rect x='80' y='80' width='352' height='96' rx='14' fill='%233a3a4e'/><rect x='80' y='208' width='150' height='88' rx='14' fill='%232a2a3e'/><rect x='264' y='208' width='70' height='88' rx='14' fill='%230f3460'/><rect x='362' y='208' width='70' height='88' rx='14' fill='%230f3460'/><rect x='80' y='320' width='70' height='88' rx='14' fill='%232a2a3e'/><rect x='178' y='320' width='70' height='88' rx='14' fill='%232a2a3e'/><rect x='264' y='320' width='70' height='88' rx='14' fill='%232a2a3e'/><rect x='362' y='320' width='70' height='88' rx='14' fill='%23e94560'/></svg>" />
+  <meta name="mobile-web-app-capable" content="yes" />
+
+  <!-- Prevent phone number detection / content sniffing -->
+  <meta name="format-detection" content="telephone=no" />
+
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     ONBOARDING SCREEN (first launch only)
+     ══════════════════════════════════════ -->
+<div id="onboarding-screen" class="top-screen active">
+  <div id="ob-main" style="display:flex;flex-direction:column;width:100%;max-width:480px;margin:0 auto;">
+
+      <!-- Step 1: Trust -->
+      <div class="ob-step active" id="ob-step-1">
+        <div class="ob-step-body">
+          <div class="ob-icon-ring">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <path d="M14 3L5 7v7c0 5.25 3.85 10.15 9 11.35C19.15 24.15 23 19.25 23 14V7L14 3z" stroke="#1D6B52" stroke-width="1.5" stroke-linejoin="round"/>
+              <path d="M10 14l3 3 5-5" stroke="#1D6B52" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h1 class="ob-title">What you tell this app stays here.</h1>
+          <p class="ob-body">Nothing is sent to any server. No account. No cloud. Your records live only on this device, encrypted.</p>
+          <p class="ob-body" style="margin-top:12px;">This app looks like a calculator. To everyone else, it is.</p>
+        </div>
+        <div class="ob-footer">
+          <button class="sw-btn sw-btn-p" id="ob-next-1">I understand</button>
+          <div class="ob-dots">
+            <span class="ob-dot active"></span><span class="ob-dot"></span><span class="ob-dot"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Language -->
+      <div class="ob-step" id="ob-step-2">
+        <div class="ob-step-body">
+          <div class="ob-step-label">One quick thing</div>
+          <h1 class="ob-title">What language will you speak?</h1>
+          <p class="ob-body">Used when you record your voice. You can change this later.</p>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:20px;">
+            <label class="sw-lang-opt selected" data-lang="en-US">
+              <input type="radio" name="ob-lang" value="en-US" checked style="display:none;">
+              <span class="sw-lang-label">English</span>
+            </label>
+            <label class="sw-lang-opt" data-lang="es-ES">
+              <input type="radio" name="ob-lang" value="es-ES" style="display:none;">
+              <span class="sw-lang-label">Español</span>
+            </label>
+            <label class="sw-lang-opt" data-lang="zh-CN">
+              <input type="radio" name="ob-lang" value="zh-CN" style="display:none;">
+              <span class="sw-lang-label">中文 (普通话)</span>
+            </label>
+            <label class="sw-lang-opt" data-lang="ja-JP">
+              <input type="radio" name="ob-lang" value="ja-JP" style="display:none;">
+              <span class="sw-lang-label">日本語</span>
+            </label>
+            <label class="sw-lang-opt" data-lang="fr-FR">
+              <input type="radio" name="ob-lang" value="fr-FR" style="display:none;">
+              <span class="sw-lang-label">Français</span>
+            </label>
+            <label class="sw-lang-opt" data-lang="ar-SA">
+              <input type="radio" name="ob-lang" value="ar-SA" style="display:none;">
+              <span class="sw-lang-label">العربية</span>
+            </label>
+          </div>
+        </div>
+        <div class="ob-footer">
+          <button class="sw-btn sw-btn-p" id="ob-next-2">Continue</button>
+          <div class="ob-dots">
+            <span class="ob-dot done"></span><span class="ob-dot active"></span><span class="ob-dot"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Secret code -->
+      <div class="ob-step" id="ob-step-3">
+        <div class="ob-step-body">
+          <div class="ob-step-label">Last thing</div>
+          <h1 class="ob-title">Choose your secret code.</h1>
+          <p class="ob-body">You'll enter this on the calculator to open this app. Digits only.</p>
+          <div class="ob-pin-field">
+            <input id="ob-pin-input" type="password" inputmode="numeric"
+              pattern="[0-9]*" placeholder="e.g. 4821" maxlength="12"
+              class="sw-input-f ob-pin-input" autocomplete="off">
+            <div class="ob-pin-preview" id="ob-pin-preview">
+              On the calculator, tap: <strong>1337 =</strong>
+            </div>
+            <div id="ob-pin-error" class="ob-pin-error" style="display:none;">Digits only, at least 3.</div>
+          </div>
+          <div class="ob-pin-skip">Skip to use the default code (1337).</div>
+        </div>
+        <div class="ob-footer">
+          <button class="sw-btn sw-btn-p" id="ob-finish-btn">I'm ready</button>
+          <div class="ob-dots">
+            <span class="ob-dot done"></span><span class="ob-dot done"></span><span class="ob-dot active"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: All set -->
+      <div class="ob-step" id="ob-step-4">
+        <div class="ob-step-body" style="text-align:center;">
+          <div class="ob-icon-ring">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <path d="M8 14l4 4 8-8" stroke="#1D6B52" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h1 class="ob-title">You're set.</h1>
+          <p class="ob-body">You'll see a calculator now. Enter your code to open this app.</p>
+          <p class="ob-body" style="margin-top:12px;color:var(--sw-text-hint);font-size:13px;">Your evidence stays on your device. AI runs on a server only you control.</p>
+        </div>
+      </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     CALCULATOR SCREEN (disguise)
+     ══════════════════════════════════════ -->
+<div id="calculator-screen" class="top-screen">
+  <div class="calculator">
+    <div class="calc-display">
+      <div id="calc-expression" class="calc-expression"></div>
+      <div id="calc-result" class="calc-result">0</div>
+    </div>
+    <div class="calc-buttons">
+      <button class="btn btn-function" data-action="clear">C</button>
+      <button class="btn btn-function" data-action="toggle-sign">+/-</button>
+      <button class="btn btn-function" data-action="percent">%</button>
+      <button class="btn btn-operator" data-action="operator" data-value="/">÷</button>
+
+      <button class="btn btn-number" data-action="digit" data-value="7">7</button>
+      <button class="btn btn-number" data-action="digit" data-value="8">8</button>
+      <button class="btn btn-number" data-action="digit" data-value="9">9</button>
+      <button class="btn btn-operator" data-action="operator" data-value="*">×</button>
+
+      <button class="btn btn-number" data-action="digit" data-value="4">4</button>
+      <button class="btn btn-number" data-action="digit" data-value="5">5</button>
+      <button class="btn btn-number" data-action="digit" data-value="6">6</button>
+      <button class="btn btn-operator" data-action="operator" data-value="-">−</button>
+
+      <button class="btn btn-number" data-action="digit" data-value="1">1</button>
+      <button class="btn btn-number" data-action="digit" data-value="2">2</button>
+      <button class="btn btn-number" data-action="digit" data-value="3">3</button>
+      <button class="btn btn-operator" data-action="operator" data-value="+">+</button>
+
+      <button class="btn btn-number btn-zero" data-action="digit" data-value="0">0</button>
+      <button class="btn btn-number" data-action="dot">.</button>
+      <button class="btn btn-equals" data-action="equals">=</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     VAULT SCREEN
+     ══════════════════════════════════════ -->
+<div id="vault-screen" class="top-screen">
+  <div class="phone" id="vaultApp">
+
+    <!-- Status bar -->
+    <div class="sw-statusbar">
+      <span class="sw-status-left"></span>
+      <button id="safety-exit-btn" class="sw-safety-x" title="Safety exit" aria-label="Safety exit">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M3 3l8 8M11 3l-8 8" stroke="#9B978E" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- ── S-OB: Onboarding (first unlock only, stepped) ─── -->
+    <div class="vault-panel" id="s-onboarding">
+
+      <!-- Step 1: Trust -->
+      <div class="ob-step active" id="ob-step-1">
+        <div class="ob-step-body">
+          <div class="ob-icon-ring">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <path d="M14 3L5 7v7c0 5.25 3.85 10.15 9 11.35C19.15 24.15 23 19.25 23 14V7L14 3z" stroke="#1D6B52" stroke-width="1.5" stroke-linejoin="round"/>
+              <path d="M10 14l3 3 5-5" stroke="#1D6B52" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h1 class="ob-title">What you tell this app stays here.</h1>
+          <p class="ob-body">Nothing is sent to any server. No account. No cloud. Your records live only on this device, encrypted.</p>
+          <p class="ob-body" style="margin-top:12px;">This app looks like a calculator. To everyone else, it is.</p>
+        </div>
+        <div class="ob-footer">
+          <button class="sw-btn sw-btn-p ob-next-btn" data-next="2">I understand</button>
+          <div class="ob-dots">
+            <span class="ob-dot active"></span><span class="ob-dot"></span><span class="ob-dot"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Language -->
+      <div class="ob-step" id="ob-step-2">
+        <div class="ob-step-body">
+          <div class="ob-step-label">One quick thing</div>
+          <h1 class="ob-title">What language will you speak?</h1>
+          <p class="ob-body">Used when you record your voice. You can change this later.</p>
+          <div id="lang-options" style="display:flex; flex-direction:column; gap:8px; margin-top:20px;">
+            <label class="sw-lang-opt selected" data-lang="en-US">
+              <input type="radio" name="sw-lang" value="en-US" checked style="display:none;">
+              <span class="sw-lang-label">English</span>
+            </label>
+            <label class="sw-lang-opt" data-lang="es-ES">
+              <input type="radio" name="sw-lang" value="es-ES" style="display:none;">
+              <span class="sw-lang-label">Español</span>
+            </label>
+            <label class="sw-lang-opt" data-lang="zh-CN">
+              <input type="radio" name="sw-lang" value="zh-CN" style="display:none;">
+              <span class="sw-lang-label">中文 (普通话)</span>
+            </label>
+            <label class="sw-lang-opt" data-lang="ja-JP">
+              <input type="radio" name="sw-lang" value="ja-JP" style="display:none;">
+              <span class="sw-lang-label">日本語</span>
+            </label>
+            <label class="sw-lang-opt" data-lang="fr-FR">
+              <input type="radio" name="sw-lang" value="fr-FR" style="display:none;">
+              <span class="sw-lang-label">Français</span>
+            </label>
+            <label class="sw-lang-opt" data-lang="ar-SA">
+              <input type="radio" name="sw-lang" value="ar-SA" style="display:none;">
+              <span class="sw-lang-label">العربية</span>
+            </label>
+          </div>
+        </div>
+        <div class="ob-footer">
+          <button class="sw-btn sw-btn-p ob-next-btn" data-next="3">Continue</button>
+          <div class="ob-dots">
+            <span class="ob-dot done"></span><span class="ob-dot active"></span><span class="ob-dot"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Secret code -->
+      <div class="ob-step" id="ob-step-3">
+        <div class="ob-step-body">
+          <div class="ob-step-label">Last thing</div>
+          <h1 class="ob-title">Choose your secret code.</h1>
+          <p class="ob-body">You'll enter this on the calculator to open this app. Digits only.</p>
+          <div class="ob-pin-field">
+            <input id="onboarding-pin-input" type="password" inputmode="numeric"
+              pattern="[0-9]*" placeholder="e.g. 4821" maxlength="12"
+              class="sw-input-f ob-pin-input" autocomplete="off">
+            <div class="ob-pin-preview" id="onboarding-return-hint">
+              On the calculator, tap: <strong>1337 =</strong>
+            </div>
+            <div id="onboarding-pin-error" class="ob-pin-error">Digits only, at least 3.</div>
+          </div>
+          <div class="ob-pin-skip">Skip to use the default code (1337).</div>
+        </div>
+        <div class="ob-footer">
+          <button class="sw-btn sw-btn-p" id="onboarding-ready-btn">I'm ready</button>
+          <div class="ob-dots">
+            <span class="ob-dot done"></span><span class="ob-dot done"></span><span class="ob-dot active"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Model loading -->
+      <div class="ob-step" id="ob-step-4">
+        <div class="ob-step-body">
+          <div class="ob-icon-ring">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <path d="M14 3L5 7v7c0 5.25 3.85 10.15 9 11.35C19.15 24.15 23 19.25 23 14V7L14 3z" stroke="#1D6B52" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h1 class="ob-title">Preparing your private AI</h1>
+          <p class="ob-body">This downloads once. Your evidence never leaves this device.</p>
+          <div class="ob-model-track">
+            <div class="ob-model-fill" id="ob-model-fill"></div>
+          </div>
+          <p class="ob-model-status" id="ob-model-status">Initializing...</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── S-00: Capture Home ───────────────────── -->
+    <div class="vault-panel active" id="s-home">
+      <div id="pending-banner" style="display:none;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <circle cx="12" cy="12" r="9" stroke="#1D6B52" stroke-width="1.5"/>
+          <path d="M12 7v5l3 3" stroke="#1D6B52" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span id="pending-banner-msg" style="flex:1;">Analyzing evidence...</span>
+        <svg id="pending-banner-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;opacity:0.5;">
+          <path d="M6 3l5 5-5 5" stroke="#1D6B52" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="sw-screen-title">What happened?</div>
+      <div class="sw-mod-grid">
+        <div class="sw-mod-btn" data-goto="capture_photo">
+          <div class="sw-mod-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="5" width="18" height="14" rx="2" stroke="#2C2A25" stroke-width="1.4"/>
+              <circle cx="12" cy="12" r="3" stroke="#2C2A25" stroke-width="1.4"/>
+            </svg>
+          </div>
+          <div class="sw-mod-label">Photo</div>
+        </div>
+        <div class="sw-mod-btn" data-goto="capture_voice">
+          <div class="sw-mod-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <rect x="9" y="3" width="6" height="14" rx="3" stroke="#2C2A25" stroke-width="1.4"/>
+              <path d="M5 12a7 7 0 0014 0" stroke="#2C2A25" stroke-width="1.4" stroke-linecap="round"/>
+              <line x1="12" y1="19" x2="12" y2="22" stroke="#2C2A25" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="sw-mod-label">Voice</div>
+        </div>
+        <div class="sw-mod-btn sw-mod-full" data-goto="capture_text">
+          <div class="sw-mod-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path d="M4 7h16M4 12h10M4 17h13" stroke="#2C2A25" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="sw-mod-label">Write it down</div>
+        </div>
+      </div>
+      <div class="sw-safe-msg">Your evidence lives on your device. The intelligence lives on a server only you control.</div>
+    </div>
+
+    <!-- ── S-01a: Photo Capture ─────────────────── -->
+    <div class="vault-panel" id="s-capture_photo">
+      <button class="sw-nav-back" data-goto="home">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 3L5 8l5 5" stroke="#6B6860" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg> Back
+      </button>
+      <div class="sw-flow-label">Photo</div>
+      <div class="sw-capture-zone" id="photo-zone">
+        <div id="photo-zone-placeholder">
+          <div class="sw-capture-icon">
+            <svg width="44" height="44" viewBox="0 0 40 40" fill="none">
+              <rect x="5" y="9" width="30" height="22" rx="3" stroke="#9B978E" stroke-width="1.4"/>
+              <circle cx="20" cy="20" r="5" stroke="#9B978E" stroke-width="1.4"/>
+              <path d="M15 9l1.5-3h7L25 9" stroke="#9B978E" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="sw-capture-text" id="photo-zone-text">Tap to add a photo</div>
+          <div style="font-size:12px; color:var(--sw-text-hint); margin-top:6px;">Camera or photo library</div>
+        </div>
+        <img id="photo-preview-img" src="" alt="Evidence photo" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:12px;" />
+      </div>
+
+      <!-- Hidden file inputs — one with camera capture, one without -->
+      <input id="camera-input" type="file" accept="image/*" capture="environment" style="display:none" />
+      <input id="library-input" type="file" accept="image/*" style="display:none" />
+
+      <!-- Source picker — shown as action row below zone on tap -->
+      <div id="photo-source-picker" class="sw-photo-picker" style="display:none;">
+        <button id="photo-take-btn" class="sw-photo-picker-btn">
+          <span class="sw-photo-picker-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.4"/>
+              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M9 5l1-2h4l1 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="sw-photo-picker-label">
+            <span class="sw-photo-picker-title">Take a photo</span>
+            <span class="sw-photo-picker-sub">Opens camera</span>
+          </span>
+        </button>
+        <div class="sw-photo-picker-divider"></div>
+        <button id="photo-upload-btn" class="sw-photo-picker-btn">
+          <span class="sw-photo-picker-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.4"/>
+              <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M21 15l-5-5L5 21" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="sw-photo-picker-label">
+            <span class="sw-photo-picker-title">Choose from library</span>
+            <span class="sw-photo-picker-sub">Pick an existing photo</span>
+          </span>
+        </button>
+      </div>
+
+      <div class="sw-safe-msg">The photo stays on your device.</div>
+      <div class="sw-btn-stack">
+        <button id="photo-continue-btn" class="sw-btn sw-btn-p" style="display:none" data-goto="gap_timestamp">Continue</button>
+        <button id="photo-retake-btn" class="sw-btn sw-btn-g" style="display:none;">Use a different photo</button>
+      </div>
+    </div>
+
+    <!-- ── S-01b: Voice Capture ─────────────────── -->
+    <div class="vault-panel" id="s-capture_voice">
+      <button class="sw-nav-back" data-goto="home">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 3L5 8l5 5" stroke="#6B6860" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg> Back
+      </button>
+      <div class="sw-flow-label">Voice</div>
+      <div class="sw-screen-title" style="text-align:center;">Say what happened.</div>
+      <div class="sw-record-timer" id="voiceTimer">0:00</div>
+      <div class="sw-record-btn" id="recordBtn">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <rect x="6" y="3" width="8" height="14" rx="4" fill="white"/>
+        </svg>
+      </div>
+      <div class="sw-safe-msg" id="voiceHint">Tap to start recording</div>
+      <div id="voice-mode-banner" style="display:none; margin:10px 16px 0; padding:10px 14px; background:#FFF8E8; border:1px solid #D4A820; border-radius:10px; font-size:13px; color:#6B4A00; line-height:1.5;">
+        <strong style="display:block; margin-bottom:2px;">No transcription server</strong>
+        Recording audio only — file will be saved and analyzed when possible.
+      </div>
+      <div id="voiceInterim" class="sw-voice-interim hidden"></div>
+      <div id="voiceTranscriptSection" style="display:none;">
+        <div class="sw-saved-toast">
+          <div class="sw-check-circle">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M2 6.5L4.5 9L10 3" stroke="#1D6B52" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="sw-saved-text">Transcript ready.</div>
+        </div>
+        <!-- Editable transcript review field -->
+        <textarea id="chat-input" class="sw-input-f sw-transcript-editor" rows="4" spellcheck="true" aria-label="Review transcript — edit if needed"></textarea>
+        <!-- Edit bar -->
+        <div id="transcript-edit-bar" class="sw-transcript-edit-bar" style="display:none;">
+          <span class="sw-transcript-edit-label">Review — edit if needed</span>
+          <div class="sw-transcript-edit-actions">
+            <button id="transcript-discard-btn" class="sw-btn sw-btn-g sw-transcript-btn">Discard</button>
+            <button id="transcript-confirm-btn" class="sw-btn sw-btn-p sw-transcript-btn">Confirm</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── S-01c: Text Entry ─────────────────────── -->
+    <div class="vault-panel" id="s-capture_text">
+      <button class="sw-nav-back" data-goto="home">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 3L5 8l5 5" stroke="#6B6860" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg> Back
+      </button>
+      <div class="sw-flow-label">Write</div>
+      <div class="sw-screen-title">What happened?</div>
+      <textarea id="text-entry-input" class="sw-input-f" rows="6" placeholder="Write as much or as little as you want."></textarea>
+      <div class="sw-btn-stack">
+        <button class="sw-btn sw-btn-p" id="text-continue-btn" data-goto="gap_timestamp">Continue</button>
+      </div>
+      <div class="sw-safe-msg">Your words stay on your device.</div>
+    </div>
+
+    <!-- ── S-02: Timestamp ───────────────────────── -->
+    <div class="vault-panel" id="s-gap_timestamp">
+      <button class="sw-nav-back" id="timestamp-back-btn">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 3L5 8l5 5" stroke="#6B6860" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg> Back
+      </button>
+      <div class="sw-flow-label">Step 1 of 4</div>
+      <div class="sw-prompt-card">
+        <div class="sw-prompt-q">When did this happen?</div>
+        <div class="sw-prompt-why">Even a rough date helps build your timeline over time.</div>
+      </div>
+      <input id="timestamp-input" class="sw-input-f" type="text" placeholder="e.g., last Tuesday, about 2 weeks ago" />
+      <div class="sw-btn-stack">
+        <button class="sw-btn sw-btn-p" id="timestamp-next-btn">Next</button>
+        <button class="sw-btn sw-btn-g" id="timestamp-skip-btn">Skip for now</button>
+      </div>
+      <div class="sw-progress-dots">
+        <div class="sw-dot active"></div><div class="sw-dot"></div><div class="sw-dot"></div><div class="sw-dot"></div>
+      </div>
+    </div>
+
+    <!-- ── S-03: Body Region ─────────────────────── -->
+    <div class="vault-panel" id="s-gap_body">
+      <button class="sw-nav-back" data-goto="gap_timestamp">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 3L5 8l5 5" stroke="#6B6860" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg> Back
+      </button>
+      <div class="sw-flow-label">Step 2 of 4</div>
+      <div class="sw-prompt-card">
+        <div class="sw-prompt-q">Where on your body is this?</div>
+        <div class="sw-prompt-why">You can tap an area or describe it in your own words.</div>
+      </div>
+      <div class="sw-body-toggle">
+        <button class="sw-body-toggle-btn active" id="bodyFrontBtn">Front</button>
+        <button class="sw-body-toggle-btn" id="bodyBackBtn">Back</button>
+      </div>
+      <div class="sw-body-map" id="bodyFront">
+        <div class="sw-body-region" data-region="Head / face">Head / face</div>
+        <div class="sw-body-region" data-region="Neck (front)">Neck (front)</div>
+        <div class="sw-body-region" data-region="Left shoulder">Left shoulder</div>
+        <div class="sw-body-region" data-region="Right shoulder">Right shoulder</div>
+        <div class="sw-body-region" data-region="Chest">Chest</div>
+        <div class="sw-body-region" data-region="Abdomen">Abdomen</div>
+        <div class="sw-body-region" data-region="Left upper arm">Left upper arm</div>
+        <div class="sw-body-region" data-region="Right upper arm">Right upper arm</div>
+        <div class="sw-body-region" data-region="Left forearm">Left forearm</div>
+        <div class="sw-body-region" data-region="Right forearm">Right forearm</div>
+        <div class="sw-body-region" data-region="Left wrist / hand">Left wrist / hand</div>
+        <div class="sw-body-region" data-region="Right wrist / hand">Right wrist / hand</div>
+        <div class="sw-body-region" data-region="Left hip">Left hip</div>
+        <div class="sw-body-region" data-region="Right hip">Right hip</div>
+        <div class="sw-body-region" data-region="Left upper leg">Left upper leg</div>
+        <div class="sw-body-region" data-region="Right upper leg">Right upper leg</div>
+        <div class="sw-body-region" data-region="Left lower leg">Left lower leg</div>
+        <div class="sw-body-region" data-region="Right lower leg">Right lower leg</div>
+      </div>
+      <div class="sw-body-map" id="bodyBack" style="display:none;">
+        <div class="sw-body-region" data-region="Scalp">Scalp</div>
+        <div class="sw-body-region" data-region="Back of head">Back of head</div>
+        <div class="sw-body-region" data-region="Neck (back)">Neck (back)</div>
+        <div class="sw-body-region" data-region="Upper back">Upper back</div>
+        <div class="sw-body-region" data-region="Lower back">Lower back</div>
+        <div class="sw-body-region" data-region="Left shoulder (back)">Left shoulder (back)</div>
+        <div class="sw-body-region" data-region="Right shoulder (back)">Right shoulder (back)</div>
+        <div class="sw-body-region" data-region="Pelvis">Pelvis</div>
+      </div>
+      <input id="body-region-input" class="sw-input-f" type="text" placeholder="Or describe it: 'left forearm, near wrist'" />
+      <div class="sw-btn-stack">
+        <button class="sw-btn sw-btn-p" id="body-next-btn">Next</button>
+        <button class="sw-btn sw-btn-g" id="body-skip-btn">Skip for now</button>
+      </div>
+      <div class="sw-progress-dots">
+        <div class="sw-dot done"></div><div class="sw-dot active"></div><div class="sw-dot"></div><div class="sw-dot"></div>
+      </div>
+    </div>
+
+    <!-- ── S-04: Narrative (photo + text only) ───── -->
+    <div class="vault-panel" id="s-gap_narrative">
+      <button class="sw-nav-back" data-goto="gap_body">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 3L5 8l5 5" stroke="#6B6860" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg> Back
+      </button>
+      <div class="sw-flow-label">Step 3 of 4</div>
+      <div class="sw-prompt-card">
+        <div class="sw-prompt-q">Can you describe what happened?</div>
+        <div class="sw-prompt-why">Your account matters, even if it's short.</div>
+      </div>
+      <textarea id="narrative-input" class="sw-input-f" rows="4" placeholder="A few words is enough"></textarea>
+      <div class="sw-btn-stack">
+        <button class="sw-btn sw-btn-p" id="narrative-next-btn">Next</button>
+        <button class="sw-btn sw-btn-g" id="narrative-skip-btn">Skip for now</button>
+      </div>
+      <div class="sw-progress-dots">
+        <div class="sw-dot done"></div><div class="sw-dot done"></div><div class="sw-dot active"></div><div class="sw-dot"></div>
+      </div>
+    </div>
+
+    <!-- ── S-06: Photo Coaching (photo only) ─────── -->
+    <div class="vault-panel" id="s-photo_coaching">
+      <button class="sw-nav-back" data-goto="gap_narrative">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 3L5 8l5 5" stroke="#6B6860" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg> Back
+      </button>
+      <div class="sw-flow-label">Step 4 of 4: photo coaching</div>
+      <div class="sw-coaching-card">
+        <div class="sw-coaching-title">Good photo.</div>
+        <div class="sw-coaching-desc">A wider shot showing where this is on your body would make this stronger as evidence.</div>
+        <div class="sw-btn-stack">
+          <button class="sw-btn sw-btn-s" data-goto="corroboration">Take wider photo</button>
+          <button class="sw-btn sw-btn-g" data-goto="corroboration">Skip for now</button>
+        </div>
+      </div>
+      <div class="sw-coaching-card" style="opacity:0.45;">
+        <div class="sw-coaching-title">Size reference</div>
+        <div class="sw-coaching-desc">Placing a coin or pen next to the injury shows its size. This helps in court.</div>
+      </div>
+      <div class="sw-progress-dots">
+        <div class="sw-dot done"></div><div class="sw-dot done"></div><div class="sw-dot done"></div><div class="sw-dot active"></div>
+      </div>
+    </div>
+
+    <!-- ── S-07: Corroboration ───────────────────── -->
+    <div class="vault-panel" id="s-corroboration">
+      <button class="sw-nav-back" id="corr-back-btn">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 3L5 8l5 5" stroke="#6B6860" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg> Back
+      </button>
+      <div class="sw-flow-label">Supporting details</div>
+      <div class="sw-prompt-card" style="margin-bottom:16px;">
+        <div class="sw-prompt-q">A few quick questions that can help strengthen your record.</div>
+        <div class="sw-prompt-why">You can skip any of these.</div>
+      </div>
+      <div class="sw-corr-list">
+        <div class="sw-corr-item" data-corr="doctor">
+          <div class="sw-corr-text">Did you see a doctor or go to the ER?</div>
+          <div class="sw-corr-toggle"></div>
+        </div>
+        <div class="sw-corr-item" data-corr="witnesses">
+          <div class="sw-corr-text">Was anyone else around when this happened?</div>
+          <div class="sw-corr-toggle"></div>
+        </div>
+        <div class="sw-corr-item" data-corr="police">
+          <div class="sw-corr-text">Did you call the police or 911?</div>
+          <div class="sw-corr-toggle"></div>
+        </div>
+        <div class="sw-corr-item" data-corr="digital">
+          <div class="sw-corr-text">Do you have texts or messages related to this?</div>
+          <div class="sw-corr-toggle"></div>
+        </div>
+      </div>
+      <div class="sw-prompt-why" style="text-align:center; margin:12px 0 16px;">We're noting these so you or an advocate can gather them later.</div>
+      <button class="sw-btn sw-btn-p" id="save-entry-btn">Save entry</button>
+    </div>
+
+    <!-- ── S-08: Complete ────────────────────────── -->
+    <div class="vault-panel" id="s-complete">
+      <div style="text-align:center; padding-top:28px;">
+        <div class="sw-check-circle-lg">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M4 12.5L9 17.5L20 6.5" stroke="#1D6B52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="sw-screen-title" style="margin-bottom:8px;">Entry saved.</div>
+        <div style="font-size:14px; color:var(--sw-text-sec); margin-bottom:4px;">Nothing has left your device.</div>
+        <div style="font-size:13px; color:var(--sw-text-hint); margin-bottom:24px;">You can come back to this anytime.</div>
+      </div>
+      <div class="sw-evidence-card" id="complete-summary">
+        <div class="sw-ev-header">Entry summary</div>
+        <div class="sw-ev-row" id="complete-type-row">
+          <span class="sw-ev-label">Type</span>
+          <span class="sw-ev-value" id="complete-type">—</span>
+        </div>
+        <div class="sw-ev-row" id="complete-region-row">
+          <span class="sw-ev-label">Region</span>
+          <span class="sw-ev-value" id="complete-region">—</span>
+        </div>
+        <div class="sw-ev-row" id="complete-when-row">
+          <span class="sw-ev-label">When</span>
+          <span class="sw-ev-value" id="complete-when">—</span>
+        </div>
+        <div class="sw-ev-row" id="complete-ai-row" style="display:none;">
+          <span class="sw-ev-label" id="complete-ai-label">AI analysis</span>
+          <span class="sw-ev-value" style="color:var(--sw-accent);">Complete</span>
+        </div>
+        <div class="sw-ai-disclaimer" id="complete-ai-disclaimer" style="display:none;">AI assessment is for documentation only — not a medical or legal determination.</div>
+        <hr class="sw-ev-divider"/>
+        <div class="sw-ev-row">
+          <span class="sw-ev-label">Export ready</span>
+          <span class="sw-ev-value" style="color:var(--sw-accent);">Yes</span>
+        </div>
+      </div>
+      <div id="complete-pattern-msg" class="sw-pattern-notice hidden"></div>
+      <div id="complete-followup-msg" class="sw-safe-msg hidden" style="margin-top:8px;"></div>
+      <div class="sw-btn-stack" style="margin-top:16px;">
+        <button class="sw-btn sw-btn-p" data-goto="home" id="doc-another-btn">Document something else</button>
+        <button class="sw-btn sw-btn-s" data-goto="timeline">View timeline</button>
+      </div>
+    </div>
+
+    <!-- ── S-10: Timeline ────────────────────────── -->
+    <div class="vault-panel" id="s-timeline">
+      <div class="sw-flow-label">Case file</div>
+      <div class="sw-screen-title" style="margin-bottom:16px;">Your timeline</div>
+      <div id="timeline-list"></div>
+      <div style="margin-top:12px;">
+        <button class="sw-btn sw-btn-s" data-goto="pattern" id="view-patterns-btn" style="display:none;">View patterns</button>
+      </div>
+      <div class="sw-btn-stack" style="margin-top:16px;">
+        <button class="sw-btn sw-btn-s" id="export-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right:6px;">
+            <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Download evidence package
+        </button>
+        <button class="sw-btn sw-btn-outline" id="export-readable-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right:6px;">
+            <path d="M4 7h16M4 12h10M4 17h13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Download readable report
+        </button>
+        <button class="sw-btn sw-btn-outline" id="import-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right:6px;">
+            <path d="M12 21V9m0 0l-4 4m4-4l4 4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Restore from backup
+        </button>
+      </div>
+    </div>
+
+    <!-- ── S-11: Record Detail ───────────────────── -->
+    <div class="vault-panel" id="s-record_detail">
+      <button class="sw-nav-back" id="record-detail-back-btn">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 3L5 8l5 5" stroke="#6B6860" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg> Back
+      </button>
+
+      <!-- Header row: modality + evidence_type + date -->
+      <div class="sw-detail-header">
+        <span class="sw-tl-type" id="detail-type-badge">—</span>
+        <span id="detail-evidence-type" class="sw-detail-pill" style="display:none;"></span>
+        <span class="sw-detail-date" id="detail-date">—</span>
+      </div>
+
+      <!-- Classification badges: incident_type + analysis_source -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;" id="detail-badges-row">
+        <span id="detail-incident-type" class="sw-detail-pill sw-pill-secondary" style="display:none;"></span>
+        <span id="detail-analysis-source" class="sw-detail-pill sw-pill-source" style="display:none;"></span>
+      </div>
+
+      <!-- Evidence photo (shown for photo entries) -->
+      <div id="detail-photo-wrap" style="display:none;margin-bottom:16px;border-radius:12px;overflow:hidden;background:#1a1a1a;line-height:0;">
+        <div style="max-height:340px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+          <img id="detail-photo-img" alt="Evidence photo" style="width:100%;height:auto;display:block;" />
+        </div>
+      </div>
+
+      <!-- Key clinical fields -->
+      <div class="sw-detail-row" id="detail-evidence-type-row" style="display:none;">
+        <span class="sw-detail-label">Evidence type</span>
+        <span class="sw-detail-value" id="detail-evidence-type-value">—</span>
+      </div>
+      <div class="sw-detail-row" id="detail-region-row">
+        <span class="sw-detail-label">Body region</span>
+        <span class="sw-detail-value" id="detail-region">—</span>
+      </div>
+      <div class="sw-detail-row" id="detail-severity-row" style="display:none;">
+        <span class="sw-detail-label">Severity</span>
+        <span class="sw-detail-value" id="detail-severity">—</span>
+      </div>
+      <div class="sw-detail-row" id="detail-injuries-row" style="display:none;">
+        <span class="sw-detail-label">Injury type</span>
+        <span class="sw-detail-value" id="detail-injuries">—</span>
+      </div>
+      <div class="sw-detail-row" id="detail-defensive-row" style="display:none;">
+        <span class="sw-detail-label">Defensive injury</span>
+        <span class="sw-detail-value" id="detail-defensive">—</span>
+      </div>
+
+      <!-- Survivor's account — always editable -->
+      <div class="sw-detail-section">
+        <div class="sw-detail-section-header">
+          <div class="sw-detail-section-title" id="detail-notes-section-title" style="margin-bottom:0;">Your account</div>
+          <button id="detail-notes-edit-btn" class="sw-review-text-edit-btn" style="margin:0;padding:2px 10px;font-size:11px;">Edit</button>
+        </div>
+        <div class="sw-detail-body" id="detail-notes" style="margin-top:8px;">—</div>
+        <div id="detail-notes-edit-wrap" style="display:none;margin-top:8px;">
+          <textarea id="detail-notes-textarea" rows="4" style="width:100%;box-sizing:border-box;font-size:14px;font-family:inherit;line-height:1.6;color:var(--sw-text);background:var(--sw-surface);border:1.5px solid var(--sw-accent);border-radius:8px;padding:10px 12px;resize:vertical;outline:none;"></textarea>
+          <div style="display:flex;gap:8px;margin-top:6px;">
+            <button id="detail-notes-save-btn" class="sw-btn" style="flex:1;padding:8px;font-size:13px;background:var(--sw-accent);color:#fff;">Save</button>
+            <button id="detail-notes-cancel-btn" class="sw-btn sw-btn-ghost" style="flex:1;padding:8px;font-size:13px;">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Review mode banner -->
+      <div id="detail-review-banner" style="display:none;padding:10px 12px;background:#E8F4F0;border-radius:8px;border:1px solid rgba(29,107,82,0.25);margin-top:16px;">
+        <div style="font-size:12px;font-weight:600;color:#1D6B52;margin-bottom:2px;">Review AI analysis</div>
+        <div style="font-size:12px;color:#3D7A63;">Tap the edit icon next to any field to correct it before confirming.</div>
+      </div>
+
+      <!-- AI-generated documentation record (hidden until analysis ready) -->
+      <div class="sw-detail-section" id="detail-ai-section" style="display:none;">
+        <div class="sw-detail-section-title">Documentation record</div>
+        <div class="sw-detail-body" id="detail-ai-summary">—</div>
+        <div id="detail-description-edit-wrap" style="display:none;margin-top:8px;">
+          <textarea id="detail-description-textarea" rows="5" style="width:100%;box-sizing:border-box;font-size:13px;font-family:inherit;line-height:1.6;color:var(--sw-text);background:var(--sw-surface);border:1.5px solid var(--sw-accent);border-radius:8px;padding:10px 12px;resize:vertical;outline:none;"></textarea>
+          <div style="display:flex;gap:8px;margin-top:6px;">
+            <button id="detail-description-save-btn" class="sw-btn" style="flex:1;padding:8px;font-size:13px;background:var(--sw-accent);color:#fff;">Save</button>
+            <button id="detail-description-cancel-btn" class="sw-btn sw-btn-ghost" style="flex:1;padding:8px;font-size:13px;">Cancel</button>
+          </div>
+        </div>
+
+        <!-- Observations -->
+        <div id="detail-indicators-wrap" style="display:none;margin-top:12px;">
+          <div class="sw-detail-label" style="margin-bottom:4px;">Observations</div>
+          <ul id="detail-indicators" style="margin:0;padding-left:16px;font-size:13px;color:var(--sw-text-sec);line-height:1.8;"></ul>
+        </div>
+
+        <!-- Photo quality warning -->
+        <div id="detail-photo-quality-wrap" style="display:none;margin-top:10px;padding:8px 10px;background:#FFF8E1;border-radius:8px;border-left:3px solid #F59E0B;">
+          <div style="font-size:12px;font-weight:600;color:#92400E;margin-bottom:2px;">Photo quality note</div>
+          <div id="detail-photo-quality-msg" style="font-size:12px;color:#92400E;"></div>
+        </div>
+
+        <!-- Recommended next steps -->
+        <div id="detail-recommendations-wrap" style="display:none;margin-top:12px;">
+          <div class="sw-detail-label" style="margin-bottom:4px;">Recommended next steps</div>
+          <ul id="detail-recommendations" style="margin:0;padding-left:16px;font-size:13px;color:var(--sw-text-sec);line-height:1.8;"></ul>
+        </div>
+
+        <div class="sw-ai-disclaimer" style="margin-top:10px;">AI assessment is for documentation only — not a medical or legal determination.</div>
+      </div>
+
+      <!-- Corroboration flags -->
+      <div class="sw-detail-section">
+        <div class="sw-detail-section-title">Corroboration</div>
+        <div class="sw-detail-corr-grid">
+          <div class="sw-detail-corr-item">
+            <span class="sw-detail-corr-dot" id="detail-corr-doctor-dot"></span>
+            <span>Medical attention</span>
+          </div>
+          <div class="sw-detail-corr-item">
+            <span class="sw-detail-corr-dot" id="detail-corr-witnesses-dot"></span>
+            <span>Witnesses present</span>
+          </div>
+          <div class="sw-detail-corr-item">
+            <span class="sw-detail-corr-dot" id="detail-corr-police-dot"></span>
+            <span>Police involved</span>
+          </div>
+          <div class="sw-detail-corr-item">
+            <span class="sw-detail-corr-dot" id="detail-corr-digital-dot"></span>
+            <span>Digital evidence</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Review confirm — shown only when status === pending_review -->
+      <div style="margin-top:16px;">
+        <button class="sw-btn" id="detail-review-btn" style="display:none;background:var(--sw-accent);color:#fff;">Confirm analysis</button>
+      </div>
+
+      <!-- Delete -->
+      <div style="margin-top:12px; margin-bottom:8px;">
+        <button class="sw-btn sw-btn-d" id="detail-delete-btn">Delete this entry</button>
+      </div>
+    </div>
+
+    <!-- ── S-12: Pattern Summary ─────────────────── -->
+    <div class="vault-panel" id="s-pattern">
+      <button class="sw-nav-back" data-goto="timeline">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 3L5 8l5 5" stroke="#6B6860" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg> Back
+      </button>
+      <div class="sw-flow-label">Pattern analysis</div>
+      <div class="sw-screen-title" style="margin-bottom:16px;">What the record shows</div>
+      <div id="pattern-content"></div>
+      <div class="sw-btn-stack" style="margin-top:12px;">
+        <button class="sw-btn sw-btn-p" data-goto="timeline">Back to timeline</button>
+      </div>
+    </div>
+
+    <!-- ── S-20: Resources ───────────────────────── -->
+    <div class="vault-panel" id="s-resources">
+      <div class="sw-flow-label">Resources</div>
+      <div class="sw-screen-title" style="margin-bottom:16px;">Help is available.</div>
+
+      <div class="sw-safety-banner" style="margin-bottom:16px;">
+        <div class="sw-safety-dot"></div>
+        <div class="sw-safety-text">If you are in danger right now, please call 911.</div>
+      </div>
+
+      <!-- Hotlines -->
+      <div class="sw-resource-card">
+        <div class="sw-res-name">National DV Hotline</div>
+        <div class="sw-res-number"><a href="tel:18007997233" style="color:inherit;text-decoration:none;">1-800-799-7233</a></div>
+        <div class="sw-res-desc">24/7. Confidential. Multilingual. Text START to 88788.</div>
+      </div>
+      <div class="sw-resource-card">
+        <div class="sw-res-name">Crisis Text Line</div>
+        <div class="sw-res-number">Text HOME to 741741</div>
+        <div class="sw-res-desc">Free, 24/7 crisis counseling via text.</div>
+      </div>
+
+      <!-- Trusted contact -->
+      <div class="sw-resource-card">
+        <div class="sw-res-name">Your trusted contact</div>
+        <div class="sw-res-desc" style="margin-bottom:12px;">Save one person you can call without hesitation.</div>
+
+        <!-- Saved state -->
+        <div id="tc-saved-view" style="display:none;">
+          <div id="tc-display-name" style="font-size:16px;font-weight:500;color:var(--sw-text);line-height:1.3;"></div>
+          <div id="tc-display-meta" style="font-size:13px;color:var(--sw-text-hint);margin-bottom:14px;"></div>
+          <a id="tc-call-btn" class="sw-btn sw-btn-p" style="text-decoration:none;margin-bottom:12px;"></a>
+          <div style="display:flex;gap:20px;justify-content:center;">
+            <button id="tc-edit-btn" style="background:none;border:none;color:var(--sw-accent);font-size:13px;cursor:pointer;font-family:inherit;padding:4px 0;">Edit</button>
+            <button id="tc-delete-btn" style="background:none;border:none;color:var(--sw-danger);font-size:13px;cursor:pointer;font-family:inherit;padding:4px 0;">Remove</button>
+          </div>
+        </div>
+
+        <!-- Edit/add state -->
+        <div id="tc-edit-view">
+          <input id="tc-name-input" class="sw-input-f" type="text" placeholder="Name (optional)" style="margin-bottom:6px;" />
+          <input id="tc-rel-input" class="sw-input-f" type="text" placeholder="Relationship (e.g. Sister, Friend)" style="margin-bottom:6px;" />
+          <input id="tc-phone-input" class="sw-input-f" type="tel" placeholder="Phone number" style="margin-bottom:10px;" />
+          <button id="tc-save-btn" class="sw-btn sw-btn-p">Save contact</button>
+        </div>
+      </div>
+
+      <!-- Safety planning checklist -->
+      <div class="sw-resource-card">
+        <div class="sw-res-name">Safety planning</div>
+        <details style="margin-top:8px;">
+          <summary class="sw-res-summary">Before you leave</summary>
+          <ul class="sw-checklist">
+            <li>Identification (passport, driver's license, birth certificate)</li>
+            <li>Children's documents and medications</li>
+            <li>Financial records and credit cards</li>
+            <li>Prescription medications (at least a week's supply)</li>
+            <li>Phone charger and backup power bank</li>
+            <li>A small amount of cash</li>
+            <li>Keys (home, car, safe deposit)</li>
+          </ul>
+        </details>
+        <details style="margin-top:6px;">
+          <summary class="sw-res-summary">If you need to leave tonight</summary>
+          <ul class="sw-checklist">
+            <li>Go to a neighbor's, friend's, or public place first</li>
+            <li>Call the hotline — they can locate shelters near you</li>
+            <li>Take this phone with you and keep it charged</li>
+            <li>Do not announce that you are leaving</li>
+          </ul>
+        </details>
+        <details style="margin-top:6px;">
+          <summary class="sw-res-summary">Digital safety</summary>
+          <ul class="sw-checklist">
+            <li>This app appears as "Calculator" — leave it installed</li>
+            <li>Clear browser history after looking up resources</li>
+            <li>Turn off location sharing on your phone if it's being monitored</li>
+            <li>Use a library computer or a friend's phone for sensitive searches</li>
+          </ul>
+        </details>
+        <details style="margin-top:6px;">
+          <summary class="sw-res-summary">About what this app collected</summary>
+          <ul class="sw-checklist">
+            <li>Photos with timestamps and AI-written injury descriptions can be submitted as exhibits</li>
+            <li>Voice recordings transcribed to text are treated as written testimony</li>
+            <li>A pattern of dated incidents strengthens a case for a protective order</li>
+            <li>Export your records as a PDF from the Timeline tab before meeting with a lawyer</li>
+          </ul>
+        </details>
+      </div>
+    </div>
+
+    <!-- ── S-30: Settings ────────────────────────── -->
+    <div class="vault-panel" id="s-settings">
+      <div class="sw-flow-label">Settings</div>
+      <div class="sw-screen-title" style="margin-bottom:8px;">Your app</div>
+
+      <!-- Security -->
+      <div class="sw-settings-group">
+        <div class="sw-settings-item" id="app-lock-btn" style="cursor:pointer;">
+          <div>
+            <div class="sw-set-label">App lock</div>
+            <div class="sw-set-hint">Tap to change your secret code</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6 3l5 5-5 5" stroke="#9B978E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="sw-settings-item" id="decoy-pin-btn" style="cursor:pointer;">
+          <div>
+            <div class="sw-set-label">Decoy code</div>
+            <div class="sw-set-hint" id="decoy-pin-hint">Not set</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6 3l5 5-5 5" stroke="#9B978E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="sw-settings-item">
+          <div>
+            <div class="sw-set-label">Auto-lock</div>
+          </div>
+          <select id="auto-lock-select" class="sw-set-select">
+            <option value="0">Never</option>
+            <option value="1">1 minute</option>
+            <option value="5">5 minutes</option>
+            <option value="10">10 minutes</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Preferences -->
+      <div class="sw-settings-group" style="margin-top:16px;">
+        <div class="sw-settings-item">
+          <div>
+            <div class="sw-set-label">App icon</div>
+            <div class="sw-set-hint">Looks like: Calculator</div>
+          </div>
+        </div>
+        <div class="sw-settings-item">
+          <div>
+            <div class="sw-set-label">Language</div>
+          </div>
+          <select id="lang-select" class="sw-set-select">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="zh">中文</option>
+            <option value="ko">한국어</option>
+            <option value="ar">العربية</option>
+          </select>
+        </div>
+        <div class="sw-settings-item" id="storage-status-item">
+          <div>
+            <div class="sw-set-label">Storage</div>
+            <div class="sw-set-hint" id="storage-hint">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Server status -->
+      <div class="sw-settings-group" style="margin-top:16px;">
+        <div class="sw-settings-item">
+          <div>
+            <div class="sw-set-label">Analysis server</div>
+            <div class="sw-set-hint" id="server-llm-hint">Checking...</div>
+          </div>
+          <span id="server-llm-dot" style="width:8px;height:8px;border-radius:50%;background:#ccc;flex-shrink:0;"></span>
+        </div>
+        <div class="sw-settings-item">
+          <div>
+            <div class="sw-set-label">Transcription server</div>
+            <div class="sw-set-hint" id="server-stt-hint">Checking...</div>
+          </div>
+          <span id="server-stt-dot" style="width:8px;height:8px;border-radius:50%;background:#ccc;flex-shrink:0;"></span>
+        </div>
+      </div>
+
+      <div style="margin-top:24px;">
+        <button class="sw-btn sw-btn-d" id="erase-btn">Erase all data</button>
+        <div class="sw-safe-msg">This permanently deletes everything. It cannot be undone.</div>
+      </div>
+      <div style="text-align:center; margin-top:24px; font-size:12px; color:var(--sw-text-hint);">
+        Silent Witness v1.0<br>No analytics. No tracking. No accounts.
+      </div>
+    </div>
+
+    <!-- ── Decoy PIN Modal ──────────────────────── -->
+    <!-- ── Change PIN overlay ────────────────────────── -->
+    <div id="change-pin-overlay" class="sw-confirm-overlay hidden" role="dialog" aria-modal="true">
+      <div class="sw-confirm-card" style="max-width:320px;">
+        <div class="sw-set-label" style="margin-bottom:4px;font-size:16px;">Change secret code</div>
+        <input id="change-pin-current" class="sw-input-f" type="tel" inputmode="numeric" placeholder="Current code" style="margin-bottom:6px;" />
+        <input id="change-pin-new" class="sw-input-f" type="tel" inputmode="numeric" placeholder="New code (min 3 digits)" style="margin-bottom:6px;" />
+        <input id="change-pin-confirm" class="sw-input-f" type="tel" inputmode="numeric" placeholder="Confirm new code" style="margin-bottom:6px;" />
+        <div id="change-pin-error" style="display:none;font-size:12px;color:var(--sw-danger);margin-bottom:8px;"></div>
+        <button id="change-pin-save" class="sw-btn sw-btn-g" style="margin-bottom:8px;">Save new code</button>
+        <button id="change-pin-cancel" class="sw-btn" style="background:transparent;color:var(--sw-text-hint);">Cancel</button>
+      </div>
+    </div>
+
+    <div id="decoy-pin-overlay" class="sw-confirm-overlay hidden" role="dialog" aria-modal="true">
+      <div class="sw-confirm-card" style="max-width:320px;">
+        <div class="sw-set-label" style="margin-bottom:4px;font-size:16px;">Decoy code</div>
+        <p style="font-size:13px;color:var(--sw-text-hint);margin:0 0 14px;">
+          A second code that opens an empty vault. Enter it if someone forces you to unlock the app.
+        </p>
+        <input id="decoy-pin-input" class="sw-input-f" type="tel" inputmode="numeric" placeholder="Enter digits (min 3)" style="margin-bottom:6px;" />
+        <div id="decoy-pin-error" style="display:none;font-size:12px;color:var(--sw-danger);margin-bottom:8px;">At least 3 digits required.</div>
+        <button id="decoy-pin-save" class="sw-btn sw-btn-g" style="margin-bottom:8px;">Save decoy code</button>
+        <button id="decoy-pin-clear" class="sw-btn" style="margin-bottom:8px;background:transparent;border:1px solid var(--sw-danger);color:var(--sw-danger);">Remove decoy code</button>
+        <button id="decoy-pin-cancel" class="sw-btn" style="background:transparent;color:var(--sw-text-hint);">Cancel</button>
+      </div>
+    </div>
+
+    <!-- ── Model Loading Overlay ──────────────────── -->
+    <div id="modelOverlay" class="sw-model-overlay hidden">
+      <div class="sw-model-card">
+        <div class="sw-model-spinner"></div>
+        <div class="sw-model-title">Saving your record</div>
+        <div class="sw-model-subtitle" id="modelOverlayText">This takes a moment the first time...</div>
+        <div class="sw-model-progress-bar">
+          <div class="sw-model-progress-fill" id="modelProgressFill" style="width:0%"></div>
+        </div>
+        <div class="sw-model-note">Nothing leaves your device.</div>
+      </div>
+    </div>
+
+    <!-- ── Safety Exit Overlay (inert — panic exit calls onLock() directly) ──── -->
+    <div id="exitOverlay" class="sw-exit-overlay hidden"></div>
+
+    <!-- ── Confirm Overlay (replaces confirm() — avoids iOS Safari URL leak) ── -->
+    <div id="confirm-overlay" class="sw-confirm-overlay hidden" role="dialog" aria-modal="true">
+      <div class="sw-confirm-card">
+        <p class="sw-confirm-message" id="confirm-message"></p>
+        <div class="sw-confirm-actions">
+          <button class="sw-btn sw-btn-g sw-confirm-btn" id="confirm-cancel-btn">Cancel</button>
+          <button class="sw-btn sw-btn-d sw-confirm-btn" id="confirm-ok-btn">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Bottom Nav ─────────────────────────────── -->
+    <div class="sw-bottom-nav" id="bottomNav">
+      <button class="sw-nav-item active" data-nav-goto="home" data-nav-tab="home">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.4"/>
+          <rect x="4" y="6" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/>
+        </svg>
+        <span class="sw-nav-label">Capture</span>
+      </button>
+      <button class="sw-nav-item" data-nav-goto="timeline" data-nav-tab="timeline">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <span class="sw-nav-label">Timeline</span>
+      </button>
+      <button class="sw-nav-item" data-nav-goto="resources" data-nav-tab="resources">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M12 21C12 21 4 15 4 9.5C4 5.36 7.58 3 12 3s8 2.36 8 6.5C20 15 12 21 12 21z" stroke="currentColor" stroke-width="1.4"/>
+        </svg>
+        <span class="sw-nav-label">Resources</span>
+      </button>
+      <button class="sw-nav-item" data-nav-goto="settings" data-nav-tab="settings">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <span class="sw-nav-label">Settings</span>
+      </button>
+    </div>
+
+    <!-- ── Desktop camera viewfinder (getUserMedia, desktop-only) ── -->
+    <div id="camera-viewfinder" style="display:none;">
+      <video id="camera-video" autoplay playsinline muted></video>
+      <canvas id="camera-canvas" style="display:none;"></canvas>
+      <div class="camera-ui">
+        <button id="camera-close-btn" class="camera-close" title="Cancel">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 3l10 10M13 3L3 13" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button id="camera-shutter-btn" class="camera-shutter" title="Take photo"></button>
+      </div>
+    </div>
+
+  </div><!-- /.phone -->
+</div><!-- /#vault-screen -->
+
+<!-- Toast -->
+<div id="toast" class="toast hidden"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script type="module" src="app.js"></script>
+
+<!-- DEBUG OVERLAY — UI hidden, JS logic preserved in app.js
+<button id="debug-toggle" onclick="(function(){var o=document.getElementById('debug-overlay');o.style.display=o.style.display==='none'?'block':'none';})()"
+  style="position:fixed; top:8px; right:8px; z-index:100000;
+    background:#333; color:#0f0; border:none; border-radius:4px;
+    padding:3px 7px; font:11px monospace; opacity:0.7; display:none;">DBG</button>
+<div id="debug-overlay" style="display:none; position:fixed; top:0; left:0; right:0;
+  height:45vh; background:rgba(0,0,0,0.9); color:#0f0; font:11px/1.4 monospace;
+  overflow-y:auto; z-index:99999; padding:8px; box-sizing:border-box;">
+  <div id="debug-log"></div>
+</div>
+-->
+
+</body>
+</html>

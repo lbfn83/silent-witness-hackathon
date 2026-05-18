@@ -1,0 +1,39 @@
+name: Deploy PWA to GitHub Pages
+
+on:
+  push:
+    branches: [wonjae/additional_prompts]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+
+      - name: Inject config
+        run: |
+          sed -i "s|__LLM_SERVER_URL__|${{ vars.LLM_SERVER_URL }}|g" pwa-app/app.js
+          sed -i "s|__STT_SERVER_URL__|${{ vars.STT_SERVER_URL }}|g" pwa-app/app.js
+          sed -i "s|__CACHE_VERSION__|${{ github.sha }}-${{ github.run_number }}|g" pwa-app/sw.js
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: pwa-app
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

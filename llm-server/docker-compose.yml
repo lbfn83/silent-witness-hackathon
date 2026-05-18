@@ -1,0 +1,91 @@
+x-ollama-common: &ollama-common
+  image: ollama/ollama:latest
+  volumes:
+    - ollama_data:/root/.ollama
+  environment:
+    - OLLAMA_KEEP_ALIVE=10m
+  healthcheck:
+    test: ["CMD", "ollama", "list"]
+    interval: 5s
+    timeout: 5s
+    retries: 30
+    start_period: 10s
+
+x-llm-common: &llm-common
+  build: .
+  ports:
+    - "8001:8001"
+  environment:
+    - LLM_MODEL=${LLM_MODEL:-gemma4:e2b}
+    - PYTHONUNBUFFERED=1
+
+services:
+  ollama-cpu:
+    <<: *ollama-common
+    ports:
+      - "11434:11434"
+    profiles: [cpu]
+
+  ollama-pull-cpu:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama-cpu:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama-cpu:11434
+      - LLM_MODEL=${LLM_MODEL:-gemma4:e2b}
+    volumes:
+      - ollama_data:/root/.ollama
+    command: ["pull", "${LLM_MODEL:-gemma4:e2b}"]
+    profiles: [cpu]
+
+  llm-cpu:
+    <<: *llm-common
+    environment:
+      - LLM_MODEL=${LLM_MODEL:-gemma4:e2b}
+      - OLLAMA_URL=http://ollama-cpu:11434
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      ollama-pull-cpu:
+        condition: service_completed_successfully
+    profiles: [cpu]
+
+  ollama-gpu:
+    <<: *ollama-common
+    ports:
+      - "11434:11434"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    profiles: [gpu]
+
+  ollama-pull-gpu:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama-gpu:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama-gpu:11434
+      - LLM_MODEL=${LLM_MODEL:-gemma4:e2b}
+    volumes:
+      - ollama_data:/root/.ollama
+    command: ["pull", "${LLM_MODEL:-gemma4:e2b}"]
+    profiles: [gpu]
+
+  llm-gpu:
+    <<: *llm-common
+    environment:
+      - LLM_MODEL=${LLM_MODEL:-gemma4:e2b}
+      - OLLAMA_URL=http://ollama-gpu:11434
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      ollama-pull-gpu:
+        condition: service_completed_successfully
+    profiles: [gpu]
+
+volumes:
+  ollama_data:

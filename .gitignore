@@ -1,0 +1,78 @@
+# Silent Witness .gitignore
+# Keep source, prompts, docs, and demo seed data tracked.
+# Ignore local caches, secrets, virtual environments, and generated artifacts.
+
+# --- OS / editor noise ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+
+.vscode/
+.idea/
+
+# --- Secrets / local environment ---
+.env
+.env.*
+!.env.example
+!.env.sample
+
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+.python-version
+.venv/
+venv/
+env/
+ENV/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# --- JavaScript / PWA tooling ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+.parcel-cache/
+.vite/
+dist/
+build/
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Docker / compose local overrides ---
+docker-compose.override.yml
+*.local.yml
+
+# --- Model and dependency caches ---
+.cache/
+.huggingface/
+models/
+ollama_data/
+
+
+# --- Temporary files ---
+tmp/
+temp/
+*.tmp
+*.bak
+*.orig

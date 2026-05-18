@@ -38,8 +38,8 @@
               <path d="M10 14l3 3 5-5" stroke="#1D6B52" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
-          <h1 class="ob-title">What you tell this app stays here.</h1>
-          <p class="ob-body">Nothing is sent to any server. No account. No cloud. Your records live only on this device, encrypted.</p>
+          <h1 class="ob-title">What you record stays on this device.</h1>
+          <p class="ob-body">AI analysis is sent to a dedicated server, never to any third party. No account. Your records live only on this device, encrypted.</p>
           <p class="ob-body" style="margin-top:12px;">This app looks like a calculator. To everyone else, it is.</p>
         </div>
         <div class="ob-footer">
@@ -184,115 +184,6 @@
           <path d="M3 3l8 8M11 3l-8 8" stroke="#9B978E" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
       </button>
-    </div>
-
-    <!-- ── S-OB: Onboarding (first unlock only, stepped) ─── -->
-    <div class="vault-panel" id="s-onboarding">
-
-      <!-- Step 1: Trust -->
-      <div class="ob-step active" id="ob-step-1">
-        <div class="ob-step-body">
-          <div class="ob-icon-ring">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <path d="M14 3L5 7v7c0 5.25 3.85 10.15 9 11.35C19.15 24.15 23 19.25 23 14V7L14 3z" stroke="#1D6B52" stroke-width="1.5" stroke-linejoin="round"/>
-              <path d="M10 14l3 3 5-5" stroke="#1D6B52" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <h1 class="ob-title">What you tell this app stays here.</h1>
-          <p class="ob-body">Nothing is sent to any server. No account. No cloud. Your records live only on this device, encrypted.</p>
-          <p class="ob-body" style="margin-top:12px;">This app looks like a calculator. To everyone else, it is.</p>
-        </div>
-        <div class="ob-footer">
-          <button class="sw-btn sw-btn-p ob-next-btn" data-next="2">I understand</button>
-          <div class="ob-dots">
-            <span class="ob-dot active"></span><span class="ob-dot"></span><span class="ob-dot"></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 2: Language -->
-      <div class="ob-step" id="ob-step-2">
-        <div class="ob-step-body">
-          <div class="ob-step-label">One quick thing</div>
-          <h1 class="ob-title">What language will you speak?</h1>
-          <p class="ob-body">Used when you record your voice. You can change this later.</p>
-          <div id="lang-options" style="display:flex; flex-direction:column; gap:8px; margin-top:20px;">
-            <label class="sw-lang-opt selected" data-lang="en-US">
-              <input type="radio" name="sw-lang" value="en-US" checked style="display:none;">
-              <span class="sw-lang-label">English</span>
-            </label>
-            <label class="sw-lang-opt" data-lang="es-ES">
-              <input type="radio" name="sw-lang" value="es-ES" style="display:none;">
-              <span class="sw-lang-label">Español</span>
-            </label>
-            <label class="sw-lang-opt" data-lang="zh-CN">
-              <input type="radio" name="sw-lang" value="zh-CN" style="display:none;">
-              <span class="sw-lang-label">中文 (普通话)</span>
-            </label>
-            <label class="sw-lang-opt" data-lang="ja-JP">
-              <input type="radio" name="sw-lang" value="ja-JP" style="display:none;">
-              <span class="sw-lang-label">日本語</span>
-            </label>
-            <label class="sw-lang-opt" data-lang="fr-FR">
-              <input type="radio" name="sw-lang" value="fr-FR" style="display:none;">
-              <span class="sw-lang-label">Français</span>
-            </label>
-            <label class="sw-lang-opt" data-lang="ar-SA">
-              <input type="radio" name="sw-lang" value="ar-SA" style="display:none;">
-              <span class="sw-lang-label">العربية</span>
-            </label>
-          </div>
-        </div>
-        <div class="ob-footer">
-          <button class="sw-btn sw-btn-p ob-next-btn" data-next="3">Continue</button>
-          <div class="ob-dots">
-            <span class="ob-dot done"></span><span class="ob-dot active"></span><span class="ob-dot"></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 3: Secret code -->
-      <div class="ob-step" id="ob-step-3">
-        <div class="ob-step-body">
-          <div class="ob-step-label">Last thing</div>
-          <h1 class="ob-title">Choose your secret code.</h1>
-          <p class="ob-body">You'll enter this on the calculator to open this app. Digits only.</p>
-          <div class="ob-pin-field">
-            <input id="onboarding-pin-input" type="password" inputmode="numeric"
-              pattern="[0-9]*" placeholder="e.g. 4821" maxlength="12"
-              class="sw-input-f ob-pin-input" autocomplete="off">
-            <div class="ob-pin-preview" id="onboarding-return-hint">
-              On the calculator, tap: <strong>1337 =</strong>
-            </div>
-            <div id="onboarding-pin-error" class="ob-pin-error">Digits only, at least 3.</div>
-          </div>
-          <div class="ob-pin-skip">Skip to use the default code (1337).</div>
-        </div>
-        <div class="ob-footer">
-          <button class="sw-btn sw-btn-p" id="onboarding-ready-btn">I'm ready</button>
-          <div class="ob-dots">
-            <span class="ob-dot done"></span><span class="ob-dot done"></span><span class="ob-dot active"></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 4: Model loading -->
-      <div class="ob-step" id="ob-step-4">
-        <div class="ob-step-body">
-          <div class="ob-icon-ring">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <path d="M14 3L5 7v7c0 5.25 3.85 10.15 9 11.35C19.15 24.15 23 19.25 23 14V7L14 3z" stroke="#1D6B52" stroke-width="1.5" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <h1 class="ob-title">Preparing your private AI</h1>
-          <p class="ob-body">This downloads once. Your evidence never leaves this device.</p>
-          <div class="ob-model-track">
-            <div class="ob-model-fill" id="ob-model-fill"></div>
-          </div>
-          <p class="ob-model-status" id="ob-model-status">Initializing...</p>
-        </div>
-      </div>
-
     </div>
 
     <!-- ── S-00: Capture Home ───────────────────── -->

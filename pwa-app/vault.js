@@ -1633,8 +1633,10 @@ export class Vault {
         wrap.insertBefore(sel, dot);
         sel.focus();
 
+        let committed = false;
         const commit = () => {
-          if (!sel.parentNode) return;
+          if (committed) return;
+          committed = true;
           const val = sel.value;
           sel.remove();
           display.textContent = labelMap[val] || val;

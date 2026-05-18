@@ -14,9 +14,33 @@ Survivors of domestic violence need to document evidence — injuries, threateni
 
 ## What Silent Witness Does
 
-Silent Witness is a PWA that looks and works exactly like a calculator. Entering the correct PIN opens an encrypted evidence vault. The vault lets a survivor capture photo, voice, and text evidence; Gemma 4 analyzes each entry and returns a structured, court-appropriate description. Everything is stored encrypted on the device. No account, no cloud sync, no trace.
+Silent Witness is a PWA that looks and works exactly like a calculator. Entering the correct PIN opens an encrypted evidence vault. The vault lets a survivor capture photo, voice, and text evidence; Gemma 4 analyzes each entry and returns a structured, court-appropriate description. Records are stored encrypted on the device. There is no account and no cloud sync; inference requests are sent only to the project's private Gemma/STT servers.
 
 When the survivor is ready to act, they can export the complete evidence package as a ZIP file containing structured JSON records, a readable report, and all attached photos.
+
+---
+
+## What We Tried That Didn't Work
+
+### Browser-based speech-to-text (Whisper WASM / WebGPU)
+
+Our original goal was to run transcription entirely in the browser so no audio ever left the device. We first considered using Gemma itself for transcription: it was already in the stack, and eliminating a second model would have simplified the architecture. The deal breaker was streaming. Survivors needed to see their words appear in real time as they spoke, and Gemma's architecture is not suited to incremental audio transcription the way a dedicated STT model is.
+
+We moved to Whisper and tested several browser-based approaches: `whisper.cpp` compiled to WASM, `transformers.js`, and Web Whisper. Whisper Tiny was fast enough but produced transcripts too inaccurate to be useful as legal testimony. Whisper Small was accurate but unusable in practice: on iOS PWA, the model took over 30 seconds to load and 40-60 seconds to transcribe a single voice note. A survivor recording a distressing incident cannot wait a minute per sentence.
+
+We abandoned browser-based STT and moved to self-hosted `faster-whisper large-v3-turbo` on a GPU, which delivers near-realtime partial transcripts over WebSocket.
+
+### Pure on-device inference (the zero-network original vision)
+
+The earliest design spec had a hard constraint: zero HTTP requests, ever. Evidence never leaves the device. We explored running Gemma 4 E2B directly in the browser via WebGPU using `transformers.js`.
+
+That constraint had a significant downstream consequence: `transformers.js` does not support function calling, so the entire prompt and analysis architecture had to be designed around a single system prompt with the JSON structure specified inline, relying on the model to follow the format, with manual parsing to verify that the output was valid JSON at all.
+
+We built that system. However, even quantized versions of the model were too large to run reliably in the browser, and iOS WebGPU support was insufficient. Pure on-device inference was impractical within the hackathon timeline and likely impractical in production for the foreseeable future.
+
+Moving to a private server unlocked Ollama's native `format` parameter for token-level JSON schema enforcement. That shift allowed us to redesign the analysis pipeline around hard structured output, which is what the two-stage classifier plus per-type extractor architecture relies on today.
+
+The compromise preserves the spirit of the original constraint: records stay encrypted on the device, and AI inference runs on project-controlled infrastructure, not on any commercial AI provider. No evidence touches Google, Apple, OpenAI, or any third-party AI service.
 
 ---
 
@@ -56,20 +80,17 @@ POST /analyze (text + optional image_base64)
 
 ---
 
-## Gemma 4 in the Code
+## Gemma 4 Implementation Map
 
-This table maps every Gemma 4 claim to a specific file and line so judges can verify directly.
+The Gemma 4 path is intentionally small and easy to inspect:
 
-| Claim | File | Where |
-|---|---|---|
-| Model: `gemma4:e2b` via Ollama | `llm-server/main.py` | Line 15: `MODEL = os.getenv("LLM_MODEL", "gemma4:e2b")` |
-| Image passed to Gemma 4 | `llm-server/main.py` | Line 178: `user_msg["images"] = [req.image_base64]` |
-| Stage 1 classification prompt | `llm-server/main.py` | Lines 20–38: `CLASSIFIER_PROMPT` |
-| Stage 2 structured output schema | `llm-server/main.py` | Lines 114+: `EXTRACT_FORMAT` |
-| Per-type prompts loaded from disk | `llm-server/main.py` | `_load_prompt()` + `prompts/*.v1.md` |
-| Two-stage Ollama calls | `llm-server/main.py` | `analyze()` endpoint, lines 182–210 |
-| PWA sends evidence to `/analyze` | `pwa-app/inference_chat.js` | `analyze()` method |
-| Image base64 extracted and sent | `pwa-app/inference_chat.js` | Lines 27–30 |
+| Implementation point | File |
+|---|---|
+| Model selection: `gemma4:e2b` via Ollama | `llm-server/main.py` |
+| Main analysis endpoint: `POST /analyze` | `llm-server/main.py` |
+| Image input passed through Ollama `images` | `llm-server/main.py` |
+| Evidence-type prompt loading | `llm-server/prompts/*.v1.md` |
+| PWA client call into `/analyze` | `pwa-app/inference_chat.js` |
 
 Evidence-type prompts: `llm-server/prompts/injury_photo.v1.md`, `digital_communication_photo.v1.md`, `scene_photo.v1.md`, and 6 others.
 
@@ -197,3 +218,19 @@ Evidence is encrypted before being written to IndexedDB. The PIN is never stored
 - **Live demo:** https://lbfn83.github.io/silent-witness-hackathon/
 - **LLM server health:** `/health` on the deployed Modal URL
 - **Default demo PIN:** `1337 =` on the calculator screen
+
+## Demo Notes
+
+- Default PIN: `1337 =`
+- The deployed GPU servers may cold start.
+- Voice transcription requires the STT server to be available.
+
+## Known Limitations
+
+- Silent Witness is not legal or medical advice.
+- AI output must be reviewed by the user before it is treated as final.
+- Deployed GPU servers may cold start.
+
+## License
+
+MIT License. See `LICENSE.txt`.

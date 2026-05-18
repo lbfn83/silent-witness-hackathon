@@ -25,12 +25,11 @@ pwa-app/
 |-- storage.js              # Encrypted IndexedDB storage
 |-- stt-client.js           # STT WebSocket client
 |-- inference_chat.js       # LLM server HTTP client
-|-- audio.js                # Legacy audio capture helper
 |-- export.js               # ZIP export/import
 |-- sw.js                   # Service Worker and app shell cache
 |-- manifest.json           # PWA manifest disguised as a calculator
 `-- demo-data/
-    `-- seed.js             # Fictional demo evidence dataset loaded on first vault open
+    |-- sample_evidence_pacakge.zip  # Fictional demo evidence dataset loaded after onboarding
 ```
 
 ## Run Locally
@@ -138,7 +137,7 @@ Gemma 4 output is not saved as a final record automatically. The app saves the r
 1. The user completes onboarding.
 2. The calculator screen appears.
 3. PIN + `=` unlocks the vault.
-4. On the first real vault open, if there are no records, `demo-data/seed.js` is loaded automatically.
+4. After onboarding completes, `demo-data/sample_evidence_pacakge.zip` is imported automatically to populate demo records.
 5. The user saves photo, voice, or text evidence.
 6. The raw record is encrypted and saved to IndexedDB first.
 7. If LLM analysis succeeds, the record moves to `pending_review`.
@@ -233,6 +232,6 @@ Camera, microphone, PWA install, and export behavior can vary across mobile brow
 
 - Avoid committing real backend URLs in `app.js`.
 - If changes do not appear immediately, clear browser caches or unregister the Service Worker in DevTools.
-- `demo-data/seed.js` is a fictional dataset and does not represent a real person.
+- `demo-data/sample_evidence_pacakge.zip` contains a fictional dataset and does not represent a real person.
 - Mobile debug overlay logic still exists in the app. Verify whether it is visible before release.
 - If LLM analysis fails, the raw evidence is still saved first so the user can review it later.

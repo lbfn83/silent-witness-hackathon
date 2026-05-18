@@ -1,0 +1,199 @@
+# Silent Witness
+
+**A calculator-disguised evidence vault for domestic violence survivors, powered by Gemma 4.**
+
+Live demo: [https://lbfn83.github.io/silent-witness-hackathon/](https://lbfn83.github.io/silent-witness-hackathon/)
+
+Submission: [Gemma 4 Good Hackathon](https://www.kaggle.com/competitions/gemma-4-good-hackathon) · Safety & Trust track · Ollama track
+
+---
+
+## The Problem
+
+Survivors of domestic violence need to document evidence — injuries, threatening messages, incidents — but the act of doing so is itself dangerous. A dedicated evidence app on a phone can be found. A browser history entry can be seen. Sending photos or notes to a cloud service leaves a trail.
+
+## What Silent Witness Does
+
+Silent Witness is a PWA that looks and works exactly like a calculator. Entering the correct PIN opens an encrypted evidence vault. The vault lets a survivor capture photo, voice, and text evidence; Gemma 4 analyzes each entry and returns a structured, court-appropriate description. Everything is stored encrypted on the device. No account, no cloud sync, no trace.
+
+When the survivor is ready to act, they can export the complete evidence package as a ZIP file containing structured JSON records, a readable report, and all attached photos.
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────┐
+│           Browser (PWA)                  │
+│                                          │
+│  Calculator screen (disguise)            │
+│       ↓ correct PIN                      │
+│  Evidence Vault                          │
+│  ├── Photo / Voice / Text capture        │
+│  ├── IndexedDB (AES-GCM encrypted)       │
+│  ├── stt-client.js ──────────────────────┼──→ STT Server
+│  │     WebSocket audio chunks            │     faster-whisper large-v3-turbo
+│  │     ← partial + final transcript      │     Modal GPU
+│  └── inference_chat.js ─────────────────┼──→ LLM Server
+│        POST /analyze                     │     Ollama + Gemma 4 (gemma4:e2b)
+│        ← structured JSON                 │     Modal GPU
+└─────────────────────────────────────────┘
+```
+
+### Gemma 4 Analysis Pipeline (two stages)
+
+```
+POST /analyze (text + optional image_base64)
+  │
+  ├─ Stage 1: CLASSIFIER_PROMPT
+  │    Gemma 4 reads the evidence and returns one of 9 evidence types:
+  │    injury_photo, digital_communication_photo, scene_photo, ...
+  │
+  └─ Stage 2: prompts/{evidence_type}.v1.md + EXTRACT_FORMAT (JSON schema)
+       Gemma 4 returns structured fields:
+       narrative.model_summary, severity_signals[], confidence, gaps[]
+```
+
+---
+
+## Gemma 4 in the Code
+
+This table maps every Gemma 4 claim to a specific file and line so judges can verify directly.
+
+| Claim | File | Where |
+|---|---|---|
+| Model: `gemma4:e2b` via Ollama | `llm-server/main.py` | Line 15: `MODEL = os.getenv("LLM_MODEL", "gemma4:e2b")` |
+| Image passed to Gemma 4 | `llm-server/main.py` | Line 178: `user_msg["images"] = [req.image_base64]` |
+| Stage 1 classification prompt | `llm-server/main.py` | Lines 20–38: `CLASSIFIER_PROMPT` |
+| Stage 2 structured output schema | `llm-server/main.py` | Lines 114+: `EXTRACT_FORMAT` |
+| Per-type prompts loaded from disk | `llm-server/main.py` | `_load_prompt()` + `prompts/*.v1.md` |
+| Two-stage Ollama calls | `llm-server/main.py` | `analyze()` endpoint, lines 182–210 |
+| PWA sends evidence to `/analyze` | `pwa-app/inference_chat.js` | `analyze()` method |
+| Image base64 extracted and sent | `pwa-app/inference_chat.js` | Lines 27–30 |
+
+Evidence-type prompts: `llm-server/prompts/injury_photo.v1.md`, `digital_communication_photo.v1.md`, `scene_photo.v1.md`, and 6 others.
+
+---
+
+## Repo Structure
+
+```
+silent-witness-hackathon/
+├── pwa-app/                    # Browser PWA
+│   ├── index.html              # All screens: calculator, onboarding, vault
+│   ├── app.js                  # Entrypoint, PIN unlock, server URLs
+│   ├── vault.js                # Evidence capture, review, timeline
+│   ├── inference_chat.js       # LLM server HTTP client
+│   ├── stt-client.js           # STT WebSocket client
+│   ├── storage.js              # AES-GCM IndexedDB
+│   ├── export.js               # ZIP export/import
+│   ├── calculator.js           # Calculator + PIN detection
+│   └── demo-data/
+│       └── sample_evidence_package.zip   # Demo records (fictional)
+├── llm-server/                 # Gemma 4 analysis server
+│   ├── main.py                 # FastAPI: /analyze, /chat, /health
+│   ├── prompts/                # Per-evidence-type Gemma prompts
+│   ├── modal_deploy_llm.py     # Modal GPU deployment
+│   └── docker-compose.yml      # Local Ollama runtime
+└── stt-server/                 # Speech-to-text server
+    ├── main.py                 # FastAPI: /transcribe, /ws/transcribe
+    ├── modal_stt_native.py     # Modal GPU deployment
+    └── docker-compose.yml      # CPU/GPU runtime
+```
+
+---
+
+## Running Locally
+
+### PWA
+
+No build step required.
+
+```bash
+python -m http.server 5501 --directory pwa-app
+```
+
+Open `http://localhost:5501`. Default PIN: `1337 =`.
+
+Replace the placeholder URLs in `pwa-app/app.js` before testing with local servers:
+
+```js
+const LLM_SERVER_URL = 'http://localhost:8001';
+const STT_URL        = 'ws://localhost:8000/ws/transcribe';
+```
+
+### LLM Server
+
+Requires Ollama installed and running.
+
+```bash
+cd llm-server
+pip install -r requirements.txt
+ollama pull gemma4:e2b
+uvicorn main:app --host 0.0.0.0 --port 8001
+```
+
+Or with Docker Compose (pulls the model automatically):
+
+```bash
+cd llm-server
+docker compose --profile cpu up --build   # CPU
+docker compose --profile gpu up --build   # GPU (NVIDIA)
+```
+
+### STT Server
+
+Requires `ffmpeg`.
+
+```bash
+cd stt-server
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+Or with Docker Compose:
+
+```bash
+cd stt-server
+docker compose --profile cpu up --build   # CPU (uses whisper base)
+docker compose --profile gpu up --build   # GPU (uses large-v3-turbo)
+```
+
+### Deployed Servers (Modal)
+
+```bash
+modal deploy llm-server/modal_deploy_llm.py
+modal deploy stt-server/modal_stt_native.py
+```
+
+---
+
+## Security Model
+
+| Property | Implementation |
+|---|---|
+| Disguise | PWA manifest: name `Calculator`, icon is a calculator |
+| Encryption | AES-GCM via Web Crypto API; PIN → PBKDF2-SHA256 (100k iterations) → KEK → DEK |
+| Decoy vault | Second PIN opens a separate empty `caldata` database |
+| Panic exit | Android hardware back, shake-to-exit, safety exit button |
+| No stored PIN | Only hash + length stored in localStorage |
+
+Evidence is encrypted before being written to IndexedDB. The PIN is never stored.
+
+---
+
+## Track Eligibility
+
+| Track | Basis |
+|---|---|
+| **Safety & Trust** | Survivor safety tool with on-device encryption, disguised UI, and zero persistent network footprint from the device |
+| **Ollama** | Gemma 4 (`gemma4:e2b`) runs via Ollama on both local Docker Compose and Modal GPU deployment |
+| **Main Track** | Functional PWA with real Gemma 4 multimodal analysis, deployed live |
+
+---
+
+## Submission Links
+
+- **Live demo:** https://lbfn83.github.io/silent-witness-hackathon/
+- **LLM server health:** `/health` on the deployed Modal URL
+- **Default demo PIN:** `1337 =` on the calculator screen

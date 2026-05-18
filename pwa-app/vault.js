@@ -1631,6 +1631,7 @@ export class Vault {
       this._showConfirm('Delete this entry?', async () => {
         try {
           await this.storage.deleteIncident(record.id);
+          this._timelineDirty = true;
           this._refreshTimeline();
           this._go('timeline');
         } catch (err) {

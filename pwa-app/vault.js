@@ -1634,6 +1634,7 @@ export class Vault {
         sel.focus();
 
         const commit = () => {
+          if (!sel.parentNode) return;
           const val = sel.value;
           sel.remove();
           display.textContent = labelMap[val] || val;

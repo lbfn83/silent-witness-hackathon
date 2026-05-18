@@ -12,7 +12,7 @@ const APP_SHELL = [
   './stt-client.js',
   './storage.js',
   './export.js',
-  './demo-data/sample_evidence_pacakge.zip',
+  './demo-data/sample_evidence_package.zip',
   'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
 ];
 
